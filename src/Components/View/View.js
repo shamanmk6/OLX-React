@@ -1,29 +1,62 @@
-import React from 'react';
+import React, { useState, useEffect, useContext,} from "react";
+import { getFirestore, collection, getDocs, query, where } from "firebase/firestore";
+import "./View.css";
+import { PostContext } from "../../store/PostContext";
+import { FirebaseContext } from "../../store/Context";
 
-import './View.css';
 function View() {
+  const [userDetails, setUserDetails] = useState();
+  const { postDetails } = useContext(PostContext);
+  const { Firebase } = useContext(FirebaseContext);
+  const db = getFirestore(Firebase);
+  useEffect(() => {
+  const fetchData = async () => {
+    try {
+      if (postDetails) {
+        const q = query(collection(db, "users"), where("id", "==", postDetails.userId));
+        const querySnapshot = await getDocs(q);
+        querySnapshot.forEach((doc) => {
+          setUserDetails(doc.data());
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching user details:", error);
+    }
+  };
+
+  fetchData();
+
+  return () => {
+    // Cleanup function if needed
+  };
+}, [postDetails,db]);
+
   return (
     <div className="viewParentDiv">
-      <div className="imageShowDiv">
-        <img
-          src="../../../Images/R15V3.jpg"
-          alt=""
-        />
-      </div>
+      {postDetails && (
+        <div className="imageShowDiv">
+          <img src={postDetails.url} alt="" />
+        </div>
+      )}
       <div className="rightSection">
-        <div className="productDetails">
-          <p>&#x20B9; 250000 </p>
-          <span>YAMAHA R15V3</span>
-          <p>Two Wheeler</p>
-          <span>Tue May 04 2021</span>
-        </div>
-        <div className="contactDetails">
-          <p>Seller details</p>
-          <p>No name</p>
-          <p>1234567890</p>
-        </div>
+        {postDetails && (
+          <div className="productDetails">
+            <p>&#x20B9; {postDetails.price} </p>
+            <span>{postDetails.name}</span>
+            <p>{postDetails.category}</p>
+            <span>{postDetails.createdAt}</span>
+          </div>
+        )}
+        {userDetails && (
+          <div className="contactDetails">
+            <p>Seller details</p>
+            <p>{userDetails.username}</p>
+            <p>{userDetails.phone}</p>
+          </div>
+        )}
       </div>
     </div>
   );
+  
 }
 export default View;
