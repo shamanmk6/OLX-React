@@ -1,5 +1,5 @@
 const dotenv=require ('dotenv')
-dotenv.cconfig();
+dotenv.config();
 import { initializeApp } from "firebase/app";
 
 const FIREBASE_KEY = process.env.FIREBASE_KEY
